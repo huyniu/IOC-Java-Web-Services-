@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EvaluationCriteriaRepository extends JpaRepository<EvaluationCriteria, Integer> {
+    boolean existsByCriterionName(String criterionName);
+    boolean existsByCriterionNameAndCriterionIdNot(String criterionName, Integer criterionId);
 }

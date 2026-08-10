@@ -1,9 +1,13 @@
 package com.example.intershipms.service.impl;
 
 import com.example.intershipms.dto.request.UserCreationRequest;
+import com.example.intershipms.dto.request.UserRoleUpdateRequest;
+import com.example.intershipms.dto.request.UserStatusUpdateRequest;
+import com.example.intershipms.dto.request.UserUpdateRequest;
 import com.example.intershipms.dto.response.UserResponse;
 import com.example.intershipms.entity.User;
 import com.example.intershipms.exception.BadRequestException;
+import com.example.intershipms.exception.ResourceNotFoundException;
 import com.example.intershipms.repository.UserRepository;
 import com.example.intershipms.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +26,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse createUser(UserCreationRequest request) {
-        // Kiểm tra trùng lặp
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new BadRequestException("Tên đăng nhập đã tồn tại!");
         }
@@ -30,7 +33,6 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("Email đã được sử dụng!");
         }
 
-        // Tạo User mới
         User user = User.builder()
                 .username(request.getUsername())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
@@ -52,7 +54,60 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    // Hàm tiện ích chuyển đổi Entity -> DTO
+    @Override
+    public UserResponse getUserById(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
+        return mapToResponse(user);
+    }
+
+    @Override
+    public UserResponse getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với username: " + username));
+        return mapToResponse(user);
+    }
+
+    @Override
+    public UserResponse updateUser(Integer id, UserUpdateRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
+
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+
+        User updatedUser = userRepository.save(user);
+        return mapToResponse(updatedUser);
+    }
+
+    @Override
+    public UserResponse updateUserStatus(Integer id, UserStatusUpdateRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
+
+        user.setIsActive(request.getIsActive());
+        User updatedUser = userRepository.save(user);
+        return mapToResponse(updatedUser);
+    }
+
+    @Override
+    public UserResponse updateUserRole(Integer id, UserRoleUpdateRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
+
+        user.setRole(request.getRole());
+        User updatedUser = userRepository.save(user);
+        return mapToResponse(updatedUser);
+    }
+
+    @Override
+    public void deleteUser(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
+        userRepository.delete(user);
+    }
+
     private UserResponse mapToResponse(User user) {
         return UserResponse.builder()
                 .userId(user.getUserId())

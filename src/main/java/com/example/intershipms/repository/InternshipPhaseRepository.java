@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface InternshipPhaseRepository extends JpaRepository<InternshipPhase, Integer> {
+    boolean existsByPhaseName(String phaseName);
+    boolean existsByPhaseNameAndPhaseIdNot(String phaseName, Integer phaseId);
 }

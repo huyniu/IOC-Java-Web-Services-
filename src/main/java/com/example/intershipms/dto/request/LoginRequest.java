@@ -1,10 +1,15 @@
 package com.example.intershipms.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class LoginRequest {
+
     @NotBlank(message = "Tên đăng nhập không được để trống")
     private String username;
 

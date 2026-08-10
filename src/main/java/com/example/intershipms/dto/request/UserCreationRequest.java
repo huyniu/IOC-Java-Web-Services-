@@ -4,10 +4,15 @@ import com.example.intershipms.entity.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserCreationRequest {
+
     @NotBlank(message = "Tên đăng nhập không được để trống")
     private String username;
 

@@ -40,6 +40,7 @@ public class User {
     private Role role;
 
     @Column(name = "IsActive", nullable = false)
+    @Builder.Default
     private Boolean isActive = true;
 
     @CreationTimestamp

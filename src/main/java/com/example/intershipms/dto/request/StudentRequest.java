@@ -2,11 +2,17 @@ package com.example.intershipms.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.*;
+
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class StudentRequest {
+
     @NotNull(message = "ID của tài khoản (User) không được để trống")
     private Integer userId;
 
