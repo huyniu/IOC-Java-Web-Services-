@@ -34,10 +34,11 @@ public class AssessmentRound {
     @Column(name = "EndDate", nullable = false)
     private LocalDate endDate;
 
-    @Column(name = "Description", columnDefinition = "TEXT")
+    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Column(name = "IsActive")
+    @Builder.Default
     private Boolean isActive = true;
 
     @CreationTimestamp

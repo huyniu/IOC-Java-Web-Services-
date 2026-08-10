@@ -24,10 +24,10 @@ public class EvaluationCriteria {
     @Column(name = "CriterionName", length = 200, unique = true, nullable = false)
     private String criterionName;
 
-    @Column(name = "Description", columnDefinition = "TEXT")
+    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    @Column(name = "MaxScore", nullable = false, precision = 5, scale = 2)
+    @Column(name = "MaxScore", precision = 5, scale = 2, nullable = false)
     private BigDecimal maxScore;
 
     @CreationTimestamp

@@ -31,7 +31,7 @@ public class RoundCriteria {
     @JoinColumn(name = "CriterionID", nullable = false)
     private EvaluationCriteria criterion;
 
-    @Column(name = "Weight", nullable = false, precision = 5, scale = 2)
+    @Column(name = "Weight", precision = 5, scale = 2, nullable = false)
     private BigDecimal weight;
 
     @CreationTimestamp

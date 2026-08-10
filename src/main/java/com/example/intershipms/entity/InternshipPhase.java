@@ -30,7 +30,7 @@ public class InternshipPhase {
     @Column(name = "EndDate", nullable = false)
     private LocalDate endDate;
 
-    @Column(name = "Description", columnDefinition = "TEXT")
+    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @CreationTimestamp

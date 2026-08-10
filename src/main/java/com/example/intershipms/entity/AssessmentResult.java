@@ -35,19 +35,19 @@ public class AssessmentResult {
     @JoinColumn(name = "CriterionID", nullable = false)
     private EvaluationCriteria criterion;
 
-    @Column(name = "Score", nullable = false, precision = 5, scale = 2)
+    @Column(name = "Score", precision = 5, scale = 2, nullable = false)
     private BigDecimal score;
 
-    @Column(name = "Comments", columnDefinition = "TEXT")
+    @Column(name = "Comments", columnDefinition = "NVARCHAR(MAX)")
     private String comments;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "EvaluatedBy", nullable = false)
     private User evaluatedBy;
 
-    @CreationTimestamp
-    @Column(name = "EvaluationDate", updatable = false)
-    private LocalDateTime evaluationDate;
+    @Column(name = "EvaluationDate")
+    @Builder.Default
+    private LocalDateTime evaluationDate = LocalDateTime.now();
 
     @CreationTimestamp
     @Column(name = "CreatedAt", updatable = false)
