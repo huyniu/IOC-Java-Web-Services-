@@ -13,6 +13,11 @@ import com.example.intershipms.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import com.example.intershipms.security.UserDetailsImpl;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +27,27 @@ public class MentorServiceImpl implements MentorService {
 
     private final MentorRepository mentorRepository;
     private final UserRepository userRepository;
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new AccessDeniedException("Bạn chưa đăng nhập hoặc phiên làm việc không hợp lệ!");
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetailsImpl userDetails) {
+            return userRepository.findById(userDetails.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
+        } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            return userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
+        } else if (principal instanceof String username) {
+            return userRepository.findByUsername(username)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
+        } else {
+            throw new AccessDeniedException("Bạn chưa đăng nhập hoặc phiên làm việc không hợp lệ!");
+        }
+    }
 
     @Override
     public MentorResponse createMentor(MentorRequest request) {
@@ -55,15 +81,42 @@ public class MentorServiceImpl implements MentorService {
 
     @Override
     public MentorResponse getMentorById(Integer id) {
+        // 1. Tìm hồ sơ giáo viên trong DB theo ID từ URL
         Mentor mentor = mentorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ giáo viên với ID: " + id));
+
+        // 2. Lấy thông tin User đang đăng nhập
+        User currentUser = getCurrentUser();
+
+        // 3. Kiểm tra rẽ nhánh theo Role
+        if (currentUser.getRole() == User.Role.MENTOR) {
+            // Nếu là MENTOR: Bắt buộc phải trùng ID tài khoản đăng nhập với mentor_id từ URL
+            if (!currentUser.getUserId().equals(mentor.getMentorId())) {
+                throw new AccessDeniedException("Bạn không có quyền xem thông tin hồ sơ của giáo viên khác!");
+            }
+        }
+        // ADMIN và STUDENT được phép xem chi tiết của tất cả giáo viên
+
         return mapToResponse(mentor, mentor.getUser());
     }
 
     @Override
     public MentorResponse updateMentor(Integer id, MentorUpdateRequest request) {
+        // 1. Tìm hồ sơ giáo viên trong DB theo ID từ URL
         Mentor mentor = mentorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ giáo viên với ID: " + id));
+
+        // 2. Lấy thông tin User đang đăng nhập từ SecurityContextHolder
+        User currentUser = getCurrentUser();
+
+        // 3. Kiểm tra rẽ nhánh quyền sửa đổi dữ liệu (Chống lỗi IDOR)
+        if (currentUser.getRole() == User.Role.MENTOR) {
+            // Nếu là MENTOR: Bắt buộc ID tài khoản đăng nhập phải trùng với ID giáo viên cần sửa
+            if (!currentUser.getUserId().equals(mentor.getMentorId())) {
+                throw new AccessDeniedException("Bạn không có quyền chỉnh sửa thông tin hồ sơ của giáo viên khác!");
+            }
+        }
+        // Role ADMIN được phép cập nhật thông tin của tất cả giáo viên
 
         mentor.setDepartment(request.getDepartment());
         mentor.setAcademicRank(request.getAcademicRank());

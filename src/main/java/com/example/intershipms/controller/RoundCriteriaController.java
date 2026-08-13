@@ -2,6 +2,7 @@ package com.example.intershipms.controller;
 
 import com.example.intershipms.dto.ApiResponse;
 import com.example.intershipms.dto.request.AssignCriteriaRequest;
+import com.example.intershipms.dto.request.RoundCriteriaRequest;
 import com.example.intershipms.dto.response.RoundCriteriaResponse;
 import com.example.intershipms.entity.RoundCriteria;
 import com.example.intershipms.exception.ResourceNotFoundException;
@@ -78,9 +79,12 @@ public class RoundCriteriaController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<RoundCriteriaResponse>> createRoundCriteria(
-            @RequestParam Integer roundId,
-            @Valid @RequestBody AssignCriteriaRequest request) {
-        RoundCriteriaResponse data = roundService.assignCriteriaToRound(roundId, request);
+            @Valid @RequestBody RoundCriteriaRequest request) {
+        AssignCriteriaRequest assignRequest = AssignCriteriaRequest.builder()
+                .criterionId(request.getCriterionId())
+                .weight(request.getWeight())
+                .build();
+        RoundCriteriaResponse data = roundService.assignCriteriaToRound(request.getRoundId(), assignRequest);
         ApiResponse<RoundCriteriaResponse> response = ApiResponse.<RoundCriteriaResponse>builder()
                 .success(true)
                 .message("Gán tiêu chí vào đợt đánh giá thành công")

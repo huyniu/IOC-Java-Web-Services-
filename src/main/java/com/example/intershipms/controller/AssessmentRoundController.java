@@ -39,8 +39,9 @@ public class AssessmentRoundController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
-    public ResponseEntity<ApiResponse<List<AssessmentRoundResponse>>> getAllRounds() {
-        List<AssessmentRoundResponse> data = roundService.getAllRounds();
+    public ResponseEntity<ApiResponse<List<AssessmentRoundResponse>>> getAllRounds(
+            @RequestParam(name = "phase_id", required = false) Long phaseId) {
+        List<AssessmentRoundResponse> data = roundService.getAllRounds(phaseId);
         ApiResponse<List<AssessmentRoundResponse>> response = ApiResponse.<List<AssessmentRoundResponse>>builder()
                 .success(true)
                 .message("Lấy danh sách đợt đánh giá thành công")

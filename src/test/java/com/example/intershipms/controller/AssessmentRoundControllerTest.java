@@ -134,4 +134,72 @@ public class AssessmentRoundControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false));
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("4. Happy Path: Lấy toàn bộ đợt đánh giá khi không truyền phase_id")
+    void shouldReturnAllAssessmentRounds_WhenPhaseIdNotProvided() throws Exception {
+        InternshipPhase phase2 = InternshipPhase.builder()
+                .phaseName("Phase Test 2")
+                .startDate(LocalDate.of(2026, 1, 1))
+                .endDate(LocalDate.of(2026, 4, 30))
+                .build();
+        phase2 = phaseRepository.save(phase2);
+
+        AssessmentRound round1 = AssessmentRound.builder()
+                .phase(phase)
+                .roundName("Round Phase 1")
+                .startDate(LocalDate.of(2025, 10, 1))
+                .endDate(LocalDate.of(2025, 10, 15))
+                .build();
+        roundRepository.save(round1);
+
+        AssessmentRound round2 = AssessmentRound.builder()
+                .phase(phase2)
+                .roundName("Round Phase 2")
+                .startDate(LocalDate.of(2026, 2, 1))
+                .endDate(LocalDate.of(2026, 2, 15))
+                .build();
+        roundRepository.save(round2);
+
+        mockMvc.perform(get("/api/assessment_rounds"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.length()").value(2));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("5. Happy Path: Lọc danh sách đợt đánh giá theo phase_id")
+    void shouldReturnFilteredAssessmentRounds_WhenPhaseIdProvided() throws Exception {
+        InternshipPhase phase2 = InternshipPhase.builder()
+                .phaseName("Phase Test 2")
+                .startDate(LocalDate.of(2026, 1, 1))
+                .endDate(LocalDate.of(2026, 4, 30))
+                .build();
+        phase2 = phaseRepository.save(phase2);
+
+        AssessmentRound round1 = AssessmentRound.builder()
+                .phase(phase)
+                .roundName("Round Phase 1")
+                .startDate(LocalDate.of(2025, 10, 1))
+                .endDate(LocalDate.of(2025, 10, 15))
+                .build();
+        roundRepository.save(round1);
+
+        AssessmentRound round2 = AssessmentRound.builder()
+                .phase(phase2)
+                .roundName("Round Phase 2")
+                .startDate(LocalDate.of(2026, 2, 1))
+                .endDate(LocalDate.of(2026, 2, 15))
+                .build();
+        roundRepository.save(round2);
+
+        mockMvc.perform(get("/api/assessment_rounds").param("phase_id", String.valueOf(phase.getPhaseId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].phaseId").value(phase.getPhaseId()))
+                .andExpect(jsonPath("$.data[0].roundName").value("Round Phase 1"));
+    }
 }

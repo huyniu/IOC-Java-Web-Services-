@@ -58,8 +58,14 @@ public class AssessmentRoundServiceImpl implements AssessmentRoundService {
     }
 
     @Override
-    public List<AssessmentRoundResponse> getAllRounds() {
-        return roundRepository.findAll().stream()
+    public List<AssessmentRoundResponse> getAllRounds(Long phaseId) {
+        List<AssessmentRound> rounds;
+        if (phaseId != null) {
+            rounds = roundRepository.findByPhaseId(phaseId);
+        } else {
+            rounds = roundRepository.findAll();
+        }
+        return rounds.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }

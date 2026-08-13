@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.intershipms.exception.ForbiddenOperationException;
 import com.example.intershipms.security.UserDetailsImpl;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -63,33 +64,31 @@ public class StudentServiceImpl implements StudentService {
         return mapToResponse(savedStudent, user);
     }
 
-    @Override
-    public List<StudentResponse> getAllStudents() {
-        // 1. Trích xuất thông tin User đang đăng nhập từ SecurityContextHolder
+    private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getPrincipal() == null) {
-            throw new ForbiddenOperationException("Bạn chưa đăng nhập hoặc phiên làm việc không hợp lệ!");
+            throw new AccessDeniedException("Bạn chưa đăng nhập hoặc phiên làm việc không hợp lệ!");
         }
 
         Object principal = authentication.getPrincipal();
-        User currentUser;
-
-        if (principal instanceof UserDetailsImpl) {
-            UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-            currentUser = userRepository.findById(userDetails.getUserId())
+        if (principal instanceof UserDetailsImpl userDetails) {
+            return userRepository.findById(userDetails.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
-        } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-            org.springframework.security.core.userdetails.UserDetails userDetails =
-                    (org.springframework.security.core.userdetails.UserDetails) principal;
-            currentUser = userRepository.findByUsername(userDetails.getUsername())
+        } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            return userRepository.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
-        } else if (principal instanceof String) {
-            String username = (String) principal;
-            currentUser = userRepository.findByUsername(username)
+        } else if (principal instanceof String username) {
+            return userRepository.findByUsername(username)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
         } else {
-            throw new ForbiddenOperationException("Bạn chưa đăng nhập hoặc phiên làm việc không hợp lệ!");
+            throw new AccessDeniedException("Bạn chưa đăng nhập hoặc phiên làm việc không hợp lệ!");
         }
+    }
+
+    @Override
+    public List<StudentResponse> getAllStudents() {
+        // 1. Trích xuất thông tin User đang đăng nhập
+        User currentUser = getCurrentUser();
 
         // 2. Kiểm tra Role và lọc danh sách sinh viên tương ứng
         List<Student> students;
@@ -101,9 +100,9 @@ public class StudentServiceImpl implements StudentService {
             students = studentRepository.findStudentsByMentorId(currentUser.getUserId());
         } else if (currentUser.getRole() == User.Role.STUDENT) {
             // Nếu Role là STUDENT: Chặn truy cập và ném lỗi 403 Forbidden
-            throw new ForbiddenOperationException("Sinh viên không có quyền truy cập danh sách sinh viên!");
+            throw new AccessDeniedException("Sinh viên không có quyền truy cập danh sách sinh viên!");
         } else {
-            throw new ForbiddenOperationException("Vai trò người dùng không hợp lệ!");
+            throw new AccessDeniedException("Vai trò người dùng không hợp lệ!");
         }
 
         return students.stream()
@@ -128,8 +127,22 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public StudentResponse getStudentById(Integer id) {
+        // 1. Tìm hồ sơ sinh viên trong DB theo ID từ URL
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ sinh viên với ID: " + id));
+
+        // 2. Lấy thông tin User đang đăng nhập
+        User currentUser = getCurrentUser();
+
+        // 3. Kiểm tra rẽ nhánh theo Role
+        if (currentUser.getRole() == User.Role.STUDENT) {
+            // Nếu là STUDENT: Chỉ cho phép xem nếu ID của tài khoản đăng nhập trùng với userId của hồ sơ sinh viên
+            if (!currentUser.getUserId().equals(student.getUser().getUserId())) {
+                throw new AccessDeniedException("Bạn không có quyền xem thông tin hồ sơ của sinh viên khác!");
+            }
+        }
+        // ADMIN và MENTOR có quyền xem chi tiết tất cả sinh viên
+
         return mapToResponse(student, student.getUser());
     }
 
@@ -137,6 +150,13 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponse updateStudent(Integer id, StudentUpdateRequest request) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ sinh viên với ID: " + id));
+
+        User currentUser = getCurrentUser();
+        if (currentUser.getRole() == User.Role.STUDENT) {
+            if (!currentUser.getUserId().equals(student.getUser().getUserId())) {
+                throw new AccessDeniedException("Bạn không có quyền chỉnh sửa thông tin hồ sơ của sinh viên khác!");
+            }
+        }
 
         student.setMajor(request.getMajor());
         student.setClassName(request.getClassName());

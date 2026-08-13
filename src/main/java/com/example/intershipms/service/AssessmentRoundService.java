@@ -10,7 +10,10 @@ import java.util.List;
 
 public interface AssessmentRoundService {
     AssessmentRoundResponse createRound(AssessmentRoundRequest request);
-    List<AssessmentRoundResponse> getAllRounds();
+    List<AssessmentRoundResponse> getAllRounds(Long phaseId);
+    default List<AssessmentRoundResponse> getAllRounds() {
+        return getAllRounds(null);
+    }
     AssessmentRoundResponse getRoundById(Integer id);
     AssessmentRoundResponse updateRound(Integer id, AssessmentRoundUpdateRequest request);
     void deleteRound(Integer id);
