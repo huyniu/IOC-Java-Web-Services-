@@ -96,6 +96,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
 
+        if (user.getRole() == User.Role.ADMIN && request.getRole() != User.Role.ADMIN) {
+            throw new BadRequestException("Không thể giáng cấp tài khoản Admin!");
+        }
+
         user.setRole(request.getRole());
         User updatedUser = userRepository.save(user);
         return mapToResponse(updatedUser);
