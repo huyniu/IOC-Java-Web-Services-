@@ -20,4 +20,5 @@ public interface AssessmentRoundService {
 
     RoundCriteriaResponse assignCriteriaToRound(Integer roundId, AssignCriteriaRequest request);
     List<RoundCriteriaResponse> getCriteriaByRoundId(Integer roundId);
+    List<RoundCriteriaResponse> getAllRoundCriteria(Long roundId);
 }

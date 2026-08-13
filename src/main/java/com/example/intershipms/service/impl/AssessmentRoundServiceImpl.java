@@ -156,6 +156,28 @@ public class AssessmentRoundServiceImpl implements AssessmentRoundService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<RoundCriteriaResponse> getAllRoundCriteria(Long roundId) {
+        List<RoundCriteria> criteriaList;
+        if (roundId != null) {
+            criteriaList = roundCriteriaRepository.findByRoundId(roundId);
+        } else {
+            criteriaList = roundCriteriaRepository.findAll();
+        }
+
+        return criteriaList.stream()
+                .map(rc -> RoundCriteriaResponse.builder()
+                        .roundCriterionId(rc.getRoundCriterionId())
+                        .roundId(rc.getRound().getRoundId())
+                        .roundName(rc.getRound().getRoundName())
+                        .criterionId(rc.getCriterion().getCriterionId())
+                        .criterionName(rc.getCriterion().getCriterionName())
+                        .maxScore(rc.getCriterion().getMaxScore())
+                        .weight(rc.getWeight())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     private AssessmentRoundResponse mapToResponse(AssessmentRound round) {
         return AssessmentRoundResponse.builder()
                 .roundId(round.getRoundId())

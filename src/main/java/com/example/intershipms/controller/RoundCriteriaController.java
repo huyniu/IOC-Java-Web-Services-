@@ -29,18 +29,9 @@ public class RoundCriteriaController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MENTOR', 'STUDENT')")
-    public ResponseEntity<ApiResponse<List<RoundCriteriaResponse>>> getAllRoundCriteria() {
-        List<RoundCriteriaResponse> data = roundCriteriaRepository.findAll().stream()
-                .map(rc -> RoundCriteriaResponse.builder()
-                        .roundCriterionId(rc.getRoundCriterionId())
-                        .roundId(rc.getRound().getRoundId())
-                        .roundName(rc.getRound().getRoundName())
-                        .criterionId(rc.getCriterion().getCriterionId())
-                        .criterionName(rc.getCriterion().getCriterionName())
-                        .maxScore(rc.getCriterion().getMaxScore())
-                        .weight(rc.getWeight())
-                        .build())
-                .collect(Collectors.toList());
+    public ResponseEntity<ApiResponse<List<RoundCriteriaResponse>>> getAllRoundCriteria(
+            @RequestParam(name = "round_id", required = false) Long roundId) {
+        List<RoundCriteriaResponse> data = roundService.getAllRoundCriteria(roundId);
 
         ApiResponse<List<RoundCriteriaResponse>> response = ApiResponse.<List<RoundCriteriaResponse>>builder()
                 .success(true)

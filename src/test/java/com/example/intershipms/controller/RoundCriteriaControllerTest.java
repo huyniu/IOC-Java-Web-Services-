@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -100,5 +101,48 @@ public class RoundCriteriaControllerTest {
                 .andExpect(jsonPath("$.data.roundId").value(round.getRoundId()))
                 .andExpect(jsonPath("$.data.criterionId").value(criteria.getCriterionId()))
                 .andExpect(jsonPath("$.data.weight").value(0.50));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Lấy danh sách RoundCriteria theo round_id thành công")
+    void getRoundCriteria_WithRoundId_Success() throws Exception {
+        RoundCriteriaRequest request = RoundCriteriaRequest.builder()
+                .roundId(round.getRoundId())
+                .criterionId(criteria.getCriterionId())
+                .weight(new BigDecimal("0.50"))
+                .build();
+
+        mockMvc.perform(post("/api/round_criteria")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/round_criteria").param("round_id", String.valueOf(round.getRoundId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].roundId").value(round.getRoundId()));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Lấy tất cả RoundCriteria khi không truyền round_id")
+    void getRoundCriteria_WithoutRoundId_Success() throws Exception {
+        RoundCriteriaRequest request = RoundCriteriaRequest.builder()
+                .roundId(round.getRoundId())
+                .criterionId(criteria.getCriterionId())
+                .weight(new BigDecimal("0.50"))
+                .build();
+
+        mockMvc.perform(post("/api/round_criteria")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/round_criteria"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.length()").value(1));
     }
 }
