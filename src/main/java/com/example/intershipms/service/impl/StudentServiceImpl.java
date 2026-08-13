@@ -13,6 +13,11 @@ import com.example.intershipms.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import com.example.intershipms.exception.ForbiddenOperationException;
+import com.example.intershipms.security.UserDetailsImpl;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,7 +65,48 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentResponse> getAllStudents() {
-        return studentRepository.findAll().stream()
+        // 1. Trích xuất thông tin User đang đăng nhập từ SecurityContextHolder
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new ForbiddenOperationException("Bạn chưa đăng nhập hoặc phiên làm việc không hợp lệ!");
+        }
+
+        Object principal = authentication.getPrincipal();
+        User currentUser;
+
+        if (principal instanceof UserDetailsImpl) {
+            UserDetailsImpl userDetails = (UserDetailsImpl) principal;
+            currentUser = userRepository.findById(userDetails.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
+        } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            org.springframework.security.core.userdetails.UserDetails userDetails =
+                    (org.springframework.security.core.userdetails.UserDetails) principal;
+            currentUser = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
+        } else if (principal instanceof String) {
+            String username = (String) principal;
+            currentUser = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản!"));
+        } else {
+            throw new ForbiddenOperationException("Bạn chưa đăng nhập hoặc phiên làm việc không hợp lệ!");
+        }
+
+        // 2. Kiểm tra Role và lọc danh sách sinh viên tương ứng
+        List<Student> students;
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            // Nếu Role là ADMIN: Lấy toàn bộ sinh viên
+            students = studentRepository.findAll();
+        } else if (currentUser.getRole() == User.Role.MENTOR) {
+            // Nếu Role là MENTOR: Chỉ lấy danh sách sinh viên phân công cho Mentor này
+            students = studentRepository.findStudentsByMentorId(currentUser.getUserId());
+        } else if (currentUser.getRole() == User.Role.STUDENT) {
+            // Nếu Role là STUDENT: Chặn truy cập và ném lỗi 403 Forbidden
+            throw new ForbiddenOperationException("Sinh viên không có quyền truy cập danh sách sinh viên!");
+        } else {
+            throw new ForbiddenOperationException("Vai trò người dùng không hợp lệ!");
+        }
+
+        return students.stream()
                 .map(student -> mapToResponse(student, student.getUser()))
                 .collect(Collectors.toList());
     }
