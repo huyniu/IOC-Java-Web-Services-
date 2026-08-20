@@ -148,9 +148,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public StudentResponse updateStudent(Integer id, StudentUpdateRequest request) {
+        // Bước 1: Lấy hồ sơ sinh viên cũ từ DB, ném 404 nếu không tồn tại
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ sinh viên với ID: " + id));
 
+        // Bước 2: Kiểm tra quyền — sinh viên chỉ được sửa hồ sơ của chính mình
         User currentUser = getCurrentUser();
         if (currentUser.getRole() == User.Role.STUDENT) {
             if (!currentUser.getUserId().equals(student.getUser().getUserId())) {
@@ -158,11 +160,28 @@ public class StudentServiceImpl implements StudentService {
             }
         }
 
-        student.setMajor(request.getMajor());
-        student.setClassName(request.getClassName());
-        student.setDateOfBirth(request.getDateOfBirth());
-        student.setAddress(request.getAddress());
+        // Bước 3: Partial Update — chỉ set field nào Client gửi lên (khác null và khác rỗng).
+        // Các field không gửi sẽ giữ nguyên giá trị cũ trong DB.
 
+        // String field: kiểm tra cả null lẫn chuỗi rỗng/khoảng trắng
+        if (request.getMajor() != null && !request.getMajor().isBlank()) {
+            student.setMajor(request.getMajor());
+        }
+
+        if (request.getClassName() != null && !request.getClassName().isBlank()) {
+            student.setClassName(request.getClassName());
+        }
+
+        if (request.getAddress() != null && !request.getAddress().isBlank()) {
+            student.setAddress(request.getAddress());
+        }
+
+        // LocalDate field: không có khái niệm "rỗng", chỉ cần kiểm tra null
+        if (request.getDateOfBirth() != null) {
+            student.setDateOfBirth(request.getDateOfBirth());
+        }
+
+        // Bước 4: Lưu đối tượng đã được cập nhật một phần vào DB
         Student updatedStudent = studentRepository.save(student);
         return mapToResponse(updatedStudent, updatedStudent.getUser());
     }

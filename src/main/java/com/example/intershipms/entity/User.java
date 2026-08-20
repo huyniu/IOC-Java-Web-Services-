@@ -7,7 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,41 +17,41 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "UserID")
+    @Column(name = "user_id")
     private Integer userId;
 
-    @Column(name = "Username", length = 50, unique = true, nullable = false)
+    @Column(name = "username", length = 50, unique = true, nullable = false)
     private String username;
 
-    @Column(name = "PasswordHash", nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "FullName", length = 100, nullable = false)
+    @Column(name = "full_name", length = 100, nullable = false)
     private String fullName;
 
-    @Column(name = "Email", length = 100, unique = true, nullable = false)
+    @Column(name = "email", length = 100, unique = true, nullable = false)
     private String email;
 
-    @Column(name = "PhoneNumber", length = 20)
+    @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "Role", nullable = false)
+    @Column(name = "role", nullable = false)
     private Role role;
 
-    @Column(name = "IsActive", nullable = false)
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
 
     @CreationTimestamp
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public enum Role {
         ADMIN, MENTOR, STUDENT
     }
-}
+}

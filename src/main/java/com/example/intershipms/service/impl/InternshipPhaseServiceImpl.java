@@ -6,6 +6,7 @@ import com.example.intershipms.dto.response.InternshipPhaseResponse;
 import com.example.intershipms.entity.InternshipPhase;
 import com.example.intershipms.exception.BadRequestException;
 import com.example.intershipms.exception.ResourceNotFoundException;
+import com.example.intershipms.repository.InternshipAssignmentRepository;
 import com.example.intershipms.repository.InternshipPhaseRepository;
 import com.example.intershipms.service.InternshipPhaseService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class InternshipPhaseServiceImpl implements InternshipPhaseService {
 
     private final InternshipPhaseRepository phaseRepository;
+    private final InternshipAssignmentRepository assignmentRepository;
 
     @Override
     public InternshipPhaseResponse createPhase(InternshipPhaseRequest request) {
@@ -81,6 +83,11 @@ public class InternshipPhaseServiceImpl implements InternshipPhaseService {
     public void deletePhase(Integer id) {
         InternshipPhase phase = phaseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy giai đoạn thực tập với ID: " + id));
+
+        if (assignmentRepository.existsByPhasePhaseId(id)) {
+            throw new BadRequestException("Không thể xóa giai đoạn thực tập đang có sinh viên theo học!");
+        }
+
         phaseRepository.delete(phase);
     }
 

@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Students")
+@Table(name = "students")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,34 +17,34 @@ import java.time.LocalDateTime;
 public class Student {
 
     @Id
-    @Column(name = "StudentID")
+    @Column(name = "student_id")
     private Integer studentId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "StudentID")
+    @JoinColumn(name = "student_id")
     private User user;
 
-    @Column(name = "StudentCode", length = 20, unique = true, nullable = false)
+    @Column(name = "student_code", length = 20, unique = true, nullable = false)
     private String studentCode;
 
-    @Column(name = "Major", length = 100)
+    @Column(name = "major", length = 100)
     private String major;
 
-    @Column(name = "Class", length = 50)
+    @Column(name = "class_name", length = 50)
     private String className;
 
-    @Column(name = "DateOfBirth")
+    @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "Address", length = 255)
+    @Column(name = "address", length = 255)
     private String address;
 
     @CreationTimestamp
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-}
+}

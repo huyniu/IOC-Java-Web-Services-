@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "RoundCriteria", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"RoundID", "CriterionID"})
+@Table(name = "round_criteria", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"round_id", "criterion_id"})
 })
 @Getter
 @Setter
@@ -20,25 +20,25 @@ public class RoundCriteria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "RoundCriterionID")
+    @Column(name = "round_criterion_id")
     private Integer roundCriterionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "RoundID", nullable = false)
+    @JoinColumn(name = "round_id", nullable = false)
     private AssessmentRound round;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CriterionID", nullable = false)
+    @JoinColumn(name = "criterion_id", nullable = false)
     private EvaluationCriteria criterion;
 
-    @Column(name = "Weight", precision = 5, scale = 2, nullable = false)
+    @Column(name = "weight", precision = 5, scale = 2, nullable = false)
     private BigDecimal weight;
 
     @CreationTimestamp
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-}
+}

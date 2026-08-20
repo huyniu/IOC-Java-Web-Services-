@@ -8,7 +8,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "EvaluationCriteria")
+// Fix #1: Đổi "EvaluationCriteria" (PascalCase) → "evaluation_criteria" (snake_case)
+// PostgreSQL mặc định lowercase tên bảng → "evaluationcriteria" != "evaluation_criteria"
+@Table(name = "evaluation_criteria")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,23 +20,26 @@ public class EvaluationCriteria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CriterionID")
+    // Fix #2: "CriterionID" → "criterion_id" (snake_case chuẩn PostgreSQL)
+    @Column(name = "criterion_id")
     private Integer criterionId;
 
-    @Column(name = "CriterionName", length = 200, unique = true, nullable = false)
+    @Column(name = "criterion_name", length = 200, unique = true, nullable = false)
     private String criterionName;
 
-    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
+    // Fix #3: NVARCHAR(MAX) là kiểu của SQL Server, KHÔNG hợp lệ trên PostgreSQL
+    // → Dùng TEXT (chuỗi không giới hạn độ dài, chuẩn PostgreSQL)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "MaxScore", precision = 5, scale = 2, nullable = false)
+    @Column(name = "max_score", precision = 5, scale = 2, nullable = false)
     private BigDecimal maxScore;
 
     @CreationTimestamp
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-}
+}

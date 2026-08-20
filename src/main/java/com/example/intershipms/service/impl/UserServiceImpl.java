@@ -11,6 +11,8 @@ import com.example.intershipms.exception.ResourceNotFoundException;
 import com.example.intershipms.repository.UserRepository;
 import com.example.intershipms.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -70,21 +72,45 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse updateUser(Integer id, UserUpdateRequest request) {
-        User user = userRepository.findById(id)
+        // Bước 1: Lấy đối tượng User hiện tại từ DB.
+        // Nếu không tìm thấy, ném 404 ngay lập tức.
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
 
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
+        // Bước 2: Partial Update — chỉ cập nhật field nào Client gửi lên (khác null và khác rỗng).
+        // Các field không được gửi sẽ giữ nguyên giá trị cũ đang có trong DB.
 
-        User updatedUser = userRepository.save(user);
+        if (request.getFullName() != null && !request.getFullName().isBlank()) {
+            existingUser.setFullName(request.getFullName());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            existingUser.setEmail(request.getEmail());
+        }
+
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()) {
+            existingUser.setPhoneNumber(request.getPhoneNumber());
+        }
+
+        // Bước 3: Lưu đối tượng đã được cập nhật một phần vào DB.
+        User updatedUser = userRepository.save(existingUser);
         return mapToResponse(updatedUser);
     }
 
     @Override
     public UserResponse updateUserStatus(Integer id, UserStatusUpdateRequest request) {
+        // 1. Lấy username của người đang thực hiện request từ SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        // 2. Tìm user mục tiêu, ném 404 nếu không tồn tại
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
+
+        // 3. Ngăn Admin tự thay đổi trạng thái tài khoản của chính mình
+        if (currentUsername.equals(user.getUsername())) {
+            throw new BadRequestException("Lỗi: Bạn không thể tự thay đổi trạng thái tài khoản của chính mình!");
+        }
 
         user.setIsActive(request.getIsActive());
         User updatedUser = userRepository.save(user);
@@ -107,8 +133,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Integer id) {
+        // 1. Lấy thông tin người dùng đang đăng nhập từ SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        // 2. Tìm user cần xóa, ném 404 nếu không tồn tại
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
+
+        // 3. So sánh username của người đang đăng nhập với user bị xóa
+        if (currentUsername.equals(user.getUsername())) {
+            throw new BadRequestException("Bạn không thể tự xóa tài khoản của chính mình!");
+        }
+
         userRepository.delete(user);
     }
 

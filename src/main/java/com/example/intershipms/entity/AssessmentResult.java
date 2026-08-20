@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "AssessmentResults", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"AssignmentID", "RoundID", "CriterionID"})
+@Table(name = "assessment_results", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"assignment_id", "round_id", "criterion_id"})
 })
 @Getter
 @Setter
@@ -20,40 +20,40 @@ public class AssessmentResult {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ResultID")
+    @Column(name = "result_id")
     private Integer resultId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "AssignmentID", nullable = false)
+    @JoinColumn(name = "assignment_id", nullable = false)
     private InternshipAssignment assignment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "RoundID", nullable = false)
+    @JoinColumn(name = "round_id", nullable = false)
     private AssessmentRound round;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CriterionID", nullable = false)
+    @JoinColumn(name = "criterion_id", nullable = false)
     private EvaluationCriteria criterion;
 
-    @Column(name = "Score", precision = 5, scale = 2, nullable = false)
+    @Column(name = "score", precision = 5, scale = 2, nullable = false)
     private BigDecimal score;
 
-    @Column(name = "Comments", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "comments", columnDefinition = "TEXT")
     private String comments;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "EvaluatedBy", nullable = false)
+    @JoinColumn(name = "evaluated_by", nullable = false)
     private User evaluatedBy;
 
-    @Column(name = "EvaluationDate")
+    @Column(name = "evaluation_date")
     @Builder.Default
     private LocalDateTime evaluationDate = LocalDateTime.now();
 
     @CreationTimestamp
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-}
+}

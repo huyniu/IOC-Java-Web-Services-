@@ -24,7 +24,7 @@ public class DataSeeder implements CommandLineRunner {
                     .username("admin")
                     .passwordHash(passwordEncoder.encode("123456"))
                     .fullName("Dinh Quoc Huy")
-                    .email("huy2311061028@example.com")
+                    .email("dhuy271105@gmail.com")
                     .role(User.Role.ADMIN)
                     .isActive(true)
                     .build();

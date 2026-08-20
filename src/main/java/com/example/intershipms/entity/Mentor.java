@@ -7,7 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Mentors")
+@Table(name = "mentors")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,25 +16,25 @@ import java.time.LocalDateTime;
 public class Mentor {
 
     @Id
-    @Column(name = "MentorID")
+    @Column(name = "mentor_id")
     private Integer mentorId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "MentorID")
+    @JoinColumn(name = "mentor_id")
     private User user;
 
-    @Column(name = "Department", length = 100)
+    @Column(name = "department", length = 100)
     private String department;
 
-    @Column(name = "AcademicRank", length = 50)
+    @Column(name = "academic_rank", length = 50)
     private String academicRank;
 
     @CreationTimestamp
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-}
+}

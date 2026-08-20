@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "AssessmentRounds")
+@Table(name = "assessment_rounds")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,34 +18,34 @@ public class AssessmentRound {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "RoundID")
+    @Column(name = "round_id")
     private Integer roundId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PhaseID", nullable = false)
+    @JoinColumn(name = "phase_id", nullable = false)
     private InternshipPhase phase;
 
-    @Column(name = "RoundName", length = 100, nullable = false)
+    @Column(name = "round_name", length = 100, nullable = false)
     private String roundName;
 
-    @Column(name = "StartDate", nullable = false)
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "EndDate", nullable = false)
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "IsActive")
+    @Column(name = "is_active")
     @Builder.Default
     private Boolean isActive = true;
 
     @CreationTimestamp
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-}
+}

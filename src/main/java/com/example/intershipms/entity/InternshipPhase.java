@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "InternshipPhases")
+@Table(name = "internship_phases")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,26 +18,29 @@ public class InternshipPhase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "PhaseID")
+    @Column(name = "phase_id")
     private Integer phaseId;
 
-    @Column(name = "PhaseName", length = 100, unique = true, nullable = false)
+    @Column(name = "phase_name", length = 100, unique = true, nullable = false)
     private String phaseName;
 
-    @Column(name = "StartDate", nullable = false)
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "EndDate", nullable = false)
+    // Fix: đổi "EndDate" (PascalCase) → "end_date" (snake_case) nhất quán với PostgreSQL
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
+    // Fix: NVARCHAR(MAX) là kiểu của SQL Server, không hợp lệ với PostgreSQL.
+    // Dùng TEXT — kiểu chuỗi không giới hạn độ dài chuẩn của PostgreSQL.
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @CreationTimestamp
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-}
+}
